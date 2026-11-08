@@ -1,0 +1,483 @@
+/* ==========================================
+   LANDING PAGE HERO STYLES
+   ========================================== */
+
+/* মেইন কন্টেইনার */
+.landingPageContainer {
+  width: 100%;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #1f242d 100%);
+  color: #ffffff;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 🌐 গ্লাসফোর্মিজম নেভিগেশন বার */
+.landingPageContainer nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.2rem 4rem;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* ব্র্যান্ড লোগো হেডার */
+.navHeader {
+  display: flex;
+  align-items: center;
+}
+
+.brandLogoHeading {
+  font-family: 'Space Grotesk', sans-serif;
+  letter-spacing: 1px;
+  font-size: 1.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  color: #ffffff;
+}
+
+.brandLogoImg {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgba(255, 152, 57, 0.4));
+}
+
+/* নেভ লিস্ট মেনু */
+.navlist {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.navItem {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #cbd5e1;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.navItem:hover {
+  color: #FF9839;
+}
+
+/* নেভবার বাটন */
+.navAuthBtn {
+  background: rgba(255, 152, 57, 0.15);
+  border: 1px solid rgba(255, 152, 57, 0.4);
+  padding: 0.5rem 1.4rem;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.navAuthBtn p {
+  margin: 0;
+  color: #FF9839;
+  font-weight: 600;
+}
+
+.navAuthBtn:hover {
+  background: #FF9839;
+  border-color: #FF9839;
+  box-shadow: 0 4px 15px rgba(255, 152, 57, 0.4);
+}
+
+.navAuthBtn:hover p {
+  color: #ffffff;
+}
+
+/* 🚀 মেইন হিরো সেকশন */
+.landingMainContainer {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2rem 5rem;
+  gap: 3rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* বাম পাশের টেক্সট কন্টেন্ট */
+.heroContent {
+  flex: 1;
+  max-width: 620px;
+}
+
+.heroTitle {
+  font-size: 3.5rem;
+  font-weight: 800;
+  line-height: 1.15;
+  margin-bottom: 1.2rem;
+  letter-spacing: -0.5px;
+}
+
+.gradientText {
+  background: linear-gradient(135deg, #FF9839 0%, #FFB773 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.heroDescription {
+  font-size: 1.2rem;
+  color: #94a3b8;
+  line-height: 1.6;
+  margin-bottom: 2.2rem;
+}
+
+/* কল-টু-অ্যাকশন (CTA) বাটন */
+.ctaButtonWrapper {
+  display: inline-block;
+  background: linear-gradient(135deg, #FF9839 0%, #e07b18 100%);
+  padding: 0.9rem 2.2rem;
+  border-radius: 50px;
+  box-shadow: 0 10px 25px rgba(255, 152, 57, 0.35);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ctaButtonWrapper:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 30px rgba(255, 152, 57, 0.5);
+}
+
+.ctaLink {
+  text-decoration: none;
+  color: #ffffff;
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  display: block;
+}
+
+/* ডান পাশের ইমেজ ভিউ */
+.heroImageWrapper {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.heroImage {
+  max-height: 65vh;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.5));
+  animation: floatImage 4s ease-in-out infinite;
+}
+
+/* ছবির জন্য সফট ফ্ল্যাটিং অ্যানিমেশন */
+@keyframes floatImage {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+/* 📱 মোবাইল ও ট্যাবলেট রেসপন্সিভনেস */
+@media (max-width: 992px) {
+  .landingPageContainer nav {
+    padding: 1.2rem 2rem;
+  }
+
+  .landingMainContainer {
+    flex-direction: column;
+    text-align: center;
+    padding: 3rem 2rem;
+    gap: 2.5rem;
+  }
+
+  .heroContent {
+    max-width: 100%;
+  }
+
+  .heroTitle {
+    font-size: 2.6rem;
+  }
+
+  .heroDescription {
+    font-size: 1.05rem;
+  }
+
+  .heroImage {
+    max-height: 45vh;
+  }
+}
+
+@media (max-width: 576px) {
+  .landingPageContainer nav {
+    padding: 1rem 1.2rem;
+  }
+
+  .brandLogoHeading {
+    font-size: 1.4rem;
+  }
+
+  .navlist {
+    gap: 1rem;
+  }
+
+  .navItem {
+    font-size: 0.85rem;
+  }
+
+  .heroTitle {
+    font-size: 2.1rem;
+  }
+
+  .ctaButtonWrapper {
+    width: 100%;
+  }
+}
+
+/* 🦶 ফুটার স্টাইল */
+.landingFooter {
+  width: 100%;
+  padding: 1.2rem;
+  text-align: center;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.95rem;
+  color: #94a3b8;
+}
+
+.landingFooter p {
+  margin: 0;
+}
+
+.landingFooter strong {
+  color: #f1f5f9;
+  font-weight: 600;
+}
+
+
+
+/* ==========================================
+   HOME COMPONENT STYLES
+   ========================================== */
+
+/* 🌌 মেইন কন্টেইনার */
+.homeContainer {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #1f242d 100%);
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+}
+
+/* 🧭 নেভিগেশন বার */
+.navBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 3rem;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.brandLogo {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  background: linear-gradient(135deg, #FF9839 0%, #FFB773 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+}
+
+.navActions {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.historyBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 6px 16px;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.historyBtn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateY(-2px);
+}
+
+.historyText {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.logoutBtn {
+  border-radius: 30px !important;
+  padding: 6px 20px !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  border: 1px solid rgba(239, 68, 68, 0.5) !important;
+  color: #ef4444 !important;
+  transition: all 0.3s ease !important;
+}
+
+.logoutBtn:hover {
+  background: rgba(239, 68, 68, 0.15) !important;
+  border-color: #ef4444 !important;
+}
+
+/* 🖼️ মেইন মিটিং প্ল্যাটফর্ম বডি */
+.meetContainer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2rem 5rem;
+  gap: 3rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* 👈 বাম পাশের প্যানেল */
+.leftPanel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.heroCard {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 3rem;
+  border-radius: 28px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.heroHeading {
+  font-size: 2.5rem;
+  font-weight: 800;
+  line-height: 1.25;
+  margin-bottom: 1.5rem;
+  color: #f8fafc;
+}
+
+.heroHeadingSpan {
+  background: linear-gradient(135deg, #FF9839 0%, #FFB773 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.heroSubtext {
+  color: #94a3b8;
+  font-size: 1rem;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.joinInputGroup {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.joinBtn {
+  background: linear-gradient(135deg, #FF9839 0%, #e07b18 100%) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  padding: 12px 28px !important;
+  border-radius: 12px !important;
+  text-transform: none !important;
+  box-shadow: 0 8px 20px rgba(255, 152, 57, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.joinBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px rgba(255, 152, 57, 0.5) !important;
+}
+
+/* 👉 ডান পাশের প্যানেল (Image Display) */
+.rightPanel {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.heroImageContainer {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  animation: float 4s ease-in-out infinite;
+}
+
+.heroImage {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 25px 35px rgba(0, 0, 0, 0.6));
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-15px); }
+  100% { transform: translateY(0px); }
+}
+
+/* 📱 রেসপন্সিভ স্টাইল */
+@media (max-width: 968px) {
+  .meetContainer {
+    flex-direction: column;
+    padding: 2rem 1.5rem;
+    text-align: center;
+  }
+
+  .navBar {
+    padding: 1rem 1.5rem;
+  }
+
+  .heroHeading {
+    font-size: 1.8rem;
+  }
+
+  .joinInputGroup {
+    flex-direction: column;
+  }
+
+  .joinBtn {
+    width: 100%;
+  }
+}

@@ -1,0 +1,230 @@
+/* মেইন মিটিং রুম কন্টেইনার */
+.meetVideoContainer {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(circle at center, #111827 0%, #030712 100%);
+    overflow: hidden;
+    display: flex;
+}
+
+/* অপোনেন্ট / রিমোট ভিডিও গ্রিড (স্ক্রিন জুড়ে বড় থাকবে) */
+.conferenceView {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    padding: 20px 20px 90px 20px;
+    box-sizing: border-box;
+}
+
+.conferenceView > div {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 18px;
+    overflow: hidden;
+    background: #1f2937;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.conferenceView video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* পুরো স্ক্রিন সুন্দরভাবে ফিল করবে */
+    border-radius: 18px;
+}
+
+/* নিজের ভিডিও (অনেক বড় এবং ফ্লোটিং পিকচার-ইন-পিকচার) */
+.meetUserVideo {
+    position: absolute;
+    bottom: 95px;
+    right: 25px;
+    width: 280px;  /* আগের চেয়ে অনেক বড় */
+    height: 175px; /* রেশিও অনুযায়ী বড় */
+    border-radius: 16px;
+    object-fit: cover;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.7);
+    border: 2px solid #FF9839; /* প্রিমিয়াম অরেঞ্জ বর্ডার */
+    z-index: 20;
+    background: #111827;
+    transform: scaleX(-1); /* আয়নার মতো ফ্লিপ */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.meetUserVideo:hover {
+    transform: scaleX(-1) scale(1.04);
+}
+
+/* নিচের কন্ট্রোল বার (গ্লাসফোর্মিজম ফ্লোটিং বার) */
+.buttonContainers {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: rgba(17, 24, 39, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding: 10px 24px;
+    border-radius: 40px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    z-index: 50;
+}
+
+.controlBtn {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: #ffffff !important;
+    padding: 12px !important;
+    transition: all 0.2s ease !important;
+}
+
+.controlBtn:hover {
+    background: rgba(255, 255, 255, 0.18) !important;
+    transform: translateY(-2px);
+}
+
+.endCallBtn {
+    background: #ef4444 !important;
+    color: #ffffff !important;
+    padding: 12px 20px !important;
+    border-radius: 28px !important;
+    transition: all 0.2s ease !important;
+}
+
+.endCallBtn:hover {
+    background: #dc2626 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+}
+
+/* আধুনিক ডার্ক চ্যাট সাইডবার */
+.chatRoom {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 360px;
+    height: calc(100vh - 125px);
+    background: rgba(17, 24, 39, 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    z-index: 30;
+    overflow: hidden;
+    animation: slideIn 0.3s ease forwards;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.chatContainer {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.chatHeader {
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chatHeader h2 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #f9fafb;
+}
+
+.chattingDisplay {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.messageItem {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px 14px;
+    border-radius: 12px;
+    border-left: 3px solid #FF9839;
+}
+
+.senderName {
+    margin: 0 0 4px 0;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #FF9839;
+}
+
+.messageText {
+    margin: 0;
+    font-size: 0.92rem;
+    color: #e5e7eb;
+    word-break: break-word;
+}
+
+.noMessages {
+    color: #6b7280;
+    text-align: center;
+    margin-top: auto;
+    margin-bottom: auto;
+    font-size: 0.9rem;
+}
+
+.chattingArea {
+    padding: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.sendBtn {
+    background: #FF9839 !important;
+    color: #fff !important;
+    font-weight: 600 !important;
+    text-transform: none !important;
+    border-radius: 10px !important;
+    padding: 0 18px !important;
+}
+
+.sendBtn:hover {
+    background: #e0852e !important;
+}
+
+/* রেসপন্সিভ */
+@media (max-width: 768px) {
+    .meetUserVideo {
+        width: 140px;
+        height: 95px;
+        bottom: 85px;
+        right: 15px;
+    }
+    .chatRoom {
+        width: calc(100vw - 30px);
+        right: 15px;
+        top: 15px;
+        height: calc(100vh - 120px);
+    }
+}
