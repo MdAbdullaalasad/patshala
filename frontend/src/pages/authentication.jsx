@@ -10,6 +10,10 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import GoogleIcon from '@mui/icons-material/Google';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { AuthContext } from '../contexts/AuthContext';
 import { Snackbar } from '@mui/material';
@@ -32,7 +36,13 @@ export default function Authentication() {
     const [formState, setFormState] = React.useState(0);
     const [open, setOpen] = React.useState(false);
 
-    const { handleRegister, handleLogin, handleSocialLogin } = React.useContext(AuthContext);
+    // Forgot Password Modal States
+    const [openForgotModal, setOpenForgotModal] = React.useState(false);
+    const [resetUsername, setResetUsername] = React.useState("");
+    const [newPassword, setNewPassword] = React.useState("");
+    const [resetError, setResetError] = React.useState("");
+
+    const { handleRegister, handleLogin, handleSocialLogin, handleForgotPassword } = React.useContext(AuthContext);
 
     const handleSwitchForm = (state) => {
         setFormState(state);
@@ -72,7 +82,27 @@ export default function Authentication() {
         }
     };
 
-    // গুগল দিয়ে লগইন
+    // পাসওয়ার্ড রিসেট হ্যান্ডলার
+    const handleResetSubmit = async () => {
+        setResetError("");
+        if (!resetUsername || !newPassword) {
+            setResetError("Please enter both Username and New Password.");
+            return;
+        }
+        try {
+            const resMsg = await handleForgotPassword(resetUsername, newPassword);
+            setMessage(resMsg || "Password updated successfully! Please Sign In.");
+            setOpen(true);
+            setOpenForgotModal(false);
+            setResetUsername("");
+            setNewPassword("");
+        } catch (err) {
+            console.error(err);
+            setResetError(err?.response?.data?.message || "Failed to reset password.");
+        }
+    };
+
+    // গুগল দিয়ে লগইন
     const handleGoogleLogin = async () => {
         setError("");
         try {
@@ -194,6 +224,27 @@ export default function Authentication() {
                                 onChange={(e) => setPassword(e.target.value)}
                             />
 
+                            {/* শুধুমাত্র Sign In পেজে Forgot Password অপশন দেখাবে */}
+                            {formState === 0 && (
+                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 0.5 }}>
+                                    <Typography
+                                        variant="body2"
+                                        onClick={() => {
+                                            setResetError("");
+                                            setOpenForgotModal(true);
+                                        }}
+                                        sx={{
+                                            color: 'primary.main',
+                                            cursor: 'pointer',
+                                            fontWeight: 500,
+                                            '&:hover': { textDecoration: 'underline' }
+                                        }}
+                                    >
+                                        Forgot Password?
+                                    </Typography>
+                                </Box>
+                            )}
+
                             {error && (
                                 <Typography color="error" variant="body2" sx={{ mt: 1 }}>
                                     {error}
@@ -233,6 +284,48 @@ export default function Authentication() {
                     </Box>
                 </Grid>
             </Grid>
+
+            {/* পাসওয়ার্ড রিসেট পপআপ মোডাল */}
+            <Dialog open={openForgotModal} onClose={() => setOpenForgotModal(false)} maxWidth="xs" fullWidth>
+                <DialogTitle>Reset Password</DialogTitle>
+                <DialogContent>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                        Enter your registered username and set a new password.
+                    </Typography>
+                    <TextField
+                        autoFocus
+                        margin="dense"
+                        label="Username"
+                        type="text"
+                        fullWidth
+                        variant="outlined"
+                        value={resetUsername}
+                        onChange={(e) => setResetUsername(e.target.value)}
+                    />
+                    <TextField
+                        margin="dense"
+                        label="New Password"
+                        type="password"
+                        fullWidth
+                        variant="outlined"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                    />
+                    {resetError && (
+                        <Typography color="error" variant="body2" sx={{ mt: 1 }}>
+                            {resetError}
+                        </Typography>
+                    )}
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 2 }}>
+                    <Button onClick={() => setOpenForgotModal(false)} color="inherit">
+                        Cancel
+                    </Button>
+                    <Button onClick={handleResetSubmit} variant="contained">
+                        Change Password
+                    </Button>
+                </DialogActions>
+            </Dialog>
 
             <Snackbar
                 open={open}

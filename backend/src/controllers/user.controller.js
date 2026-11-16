@@ -1,6 +1,6 @@
 import httpStatus from "http-status";
 import { User } from "../models/user.model.js";
-import bcrypt from "bcryptjs"; // Render লিনাক্স সার্ভার সাপোর্টের জন্য bcryptjs ব্যবহার করা হয়েছে
+import bcrypt from "bcryptjs"; // Render লিনাক্স সার্ভার সাপোর্টের জন্য bcryptjs ব্যবহার করা হয়েছে
 
 import crypto from "crypto";
 import { Meeting } from "../models/meeting.model.js";
@@ -61,6 +61,30 @@ const register = async (req, res) => {
     }
 };
 
+// নতুন ফাংশন: সরাসরি Username দিয়ে পাসওয়ার্ড পরিবর্তন
+const forgotPassword = async (req, res) => {
+    const { username, newPassword } = req.body;
+
+    if (!username || !newPassword) {
+        return res.status(httpStatus.BAD_REQUEST).json({ message: "Please provide username and new password" });
+    }
+
+    try {
+        const user = await User.findOne({ username });
+        if (!user) {
+            return res.status(httpStatus.NOT_FOUND).json({ message: "User Not Found" });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPassword;
+        await user.save();
+
+        return res.status(httpStatus.OK).json({ message: "Password updated successfully!" });
+    } catch (e) {
+        return res.status(500).json({ message: `Something went wrong ${e}` });
+    }
+};
+
 const getUserHistory = async (req, res) => {
     const { token } = req.query;
 
@@ -92,4 +116,4 @@ const addToHistory = async (req, res) => {
     }
 };
 
-export { login, register, getUserHistory, addToHistory };
+export { login, register, forgotPassword, getUserHistory, addToHistory };
