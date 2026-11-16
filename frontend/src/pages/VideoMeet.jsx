@@ -9,8 +9,10 @@ import MicOffIcon from '@mui/icons-material/MicOff';
 import ScreenShareIcon from '@mui/icons-material/ScreenShare';
 import StopScreenShareIcon from '@mui/icons-material/StopScreenShare';
 import ChatIcon from '@mui/icons-material/Chat';
+import AccessibilityNewIcon from '@mui/icons-material/AccessibilityNew';
 import styles from "../styles/videoComponent.module.css";
 import server from '../environment';
+import XRayOverlay from '../components/XRayOverlay';
 
 const server_url = server;
 var connections = {};
@@ -25,6 +27,7 @@ export default function VideoMeetComponent() {
     var socketRef = useRef();
     let socketIdRef = useRef();
     let localVideoref = useRef();
+    let xrayStreamRef = useRef(null); // X-Ray কম্বাইন্ড স্ট্রিম সংরক্ষণের জন্য
 
     let [videoAvailable, setVideoAvailable] = useState(true);
     let [audioAvailable, setAudioAvailable] = useState(true);
@@ -32,6 +35,10 @@ export default function VideoMeetComponent() {
     let [video, setVideo] = useState(true);
     let [audio, setAudio] = useState(true);
     let [screen, setScreen] = useState(false);
+
+    // AI X-Ray Mirror States ('skull' | 'hand' | 'body')
+    let [xrayActive, setXrayActive] = useState(false);
+    let [xrayMode, setXrayMode] = useState('skull');
 
     let [showModal, setModal] = useState(false);
     let [screenAvailable, setScreenAvailable] = useState(false);
@@ -42,8 +49,6 @@ export default function VideoMeetComponent() {
 
     let [askForUsername, setAskForUsername] = useState(true);
     let [username, setUsername] = useState("");
-    
-    // মিটিংয়ের সঠিক টাইমিং হিসাব রাখার স্টেট
     let [meetingStartTime, setMeetingStartTime] = useState(null);
 
     const videoRef = useRef([]);
@@ -108,9 +113,7 @@ export default function VideoMeetComponent() {
 
         for (let id in connections) {
             if (id === socketIdRef.current) continue;
-
             connections[id].addStream(window.localStream);
-
             connections[id].createOffer().then((description) => {
                 connections[id].setLocalDescription(description)
                     .then(() => {
@@ -123,7 +126,6 @@ export default function VideoMeetComponent() {
         stream.getTracks().forEach(track => track.onended = () => {
             setVideo(false);
             setAudio(false);
-
             try {
                 let tracks = localVideoref.current.srcObject.getTracks();
                 tracks.forEach(track => track.stop());
@@ -137,7 +139,6 @@ export default function VideoMeetComponent() {
 
             for (let id in connections) {
                 connections[id].addStream(window.localStream);
-
                 connections[id].createOffer().then((description) => {
                     connections[id].setLocalDescription(description)
                         .then(() => {
@@ -176,9 +177,7 @@ export default function VideoMeetComponent() {
 
         for (let id in connections) {
             if (id === socketIdRef.current) continue;
-
             connections[id].addStream(window.localStream);
-
             connections[id].createOffer().then((description) => {
                 connections[id].setLocalDescription(description)
                     .then(() => {
@@ -190,7 +189,6 @@ export default function VideoMeetComponent() {
 
         stream.getTracks().forEach(track => track.onended = () => {
             setScreen(false);
-
             try {
                 let tracks = localVideoref.current.srcObject.getTracks();
                 tracks.forEach(track => track.stop());
@@ -201,7 +199,6 @@ export default function VideoMeetComponent() {
             if (localVideoref.current) {
                 localVideoref.current.srcObject = window.localStream;
             }
-
             getUserMedia();
         });
     };
@@ -230,7 +227,6 @@ export default function VideoMeetComponent() {
 
     let connectToSocketServer = () => {
         socketRef.current = io.connect(server_url, { secure: false });
-
         socketRef.current.on('signal', gotMessageFromServer);
 
         socketRef.current.on('connect', () => {
@@ -280,8 +276,11 @@ export default function VideoMeetComponent() {
                         }
                     };
 
-                    if (window.localStream !== undefined && window.localStream !== null) {
-                        connections[socketListId].addStream(window.localStream);
+                    // X-Ray চালু থাকলে কম্বাইন্ড স্ট্রিম পাঠাবে, নাহলে সাধারণ ক্যামেরা স্ট্রিম
+                    const activeOutgoingStream = xrayStreamRef.current || window.localStream;
+
+                    if (activeOutgoingStream !== undefined && activeOutgoingStream !== null) {
+                        connections[socketListId].addStream(activeOutgoingStream);
                     } else {
                         let blackSilence = (...args) => new MediaStream([black(...args), silence()]);
                         window.localStream = blackSilence();
@@ -290,11 +289,11 @@ export default function VideoMeetComponent() {
                 });
 
                 if (id === socketIdRef.current) {
+                    const activeOutgoingStream = xrayStreamRef.current || window.localStream;
                     for (let id2 in connections) {
                         if (id2 === socketIdRef.current) continue;
-
                         try {
-                            connections[id2].addStream(window.localStream);
+                            connections[id2].addStream(activeOutgoingStream);
                         } catch (e) { }
 
                         connections[id2].createOffer().then((description) => {
@@ -349,12 +348,44 @@ export default function VideoMeetComponent() {
         setScreen(!screen);
     };
 
-    // কল কেটে ডায়ালগ, রুম কোড ও সময় হিস্ট্রিতে সেভ করা
+    // সংযুক্ত সব অপোনেন্টের ভিডিও ট্র্যাক সাথে সাথে আপডেট করার ফাংশন
+    const broadcastVideoTrackToPeers = (newTrack) => {
+        if (!newTrack) return;
+        for (let id in connections) {
+            if (id === socketIdRef.current) continue;
+            const pc = connections[id];
+            const sender = pc.getSenders().find((s) => s.track && s.track.kind === 'video');
+            if (sender) {
+                sender.replaceTrack(newTrack).catch((err) => console.error("Track replace error:", err));
+            }
+        }
+    };
+
+    // AI X-Ray স্ট্রিম রেডি হলে সেভ করা এবং সব অপোনেন্টের কাছে পাঠানো
+    const handleXRayStreamReady = (combinedStream) => {
+        xrayStreamRef.current = combinedStream;
+        const xrayVideoTrack = combinedStream.getVideoTracks()[0];
+        broadcastVideoTrackToPeers(xrayVideoTrack);
+    };
+
+    // AI X-Ray বাটন টগল
+    const toggleXRay = () => {
+        if (xrayActive) {
+            setXrayActive(false);
+            xrayStreamRef.current = null;
+            if (window.localStream) {
+                const normalTrack = window.localStream.getVideoTracks()[0];
+                broadcastVideoTrackToPeers(normalTrack);
+            }
+        } else {
+            setXrayActive(true);
+        }
+    };
+
     let handleEndCall = () => {
         try {
             const endTime = new Date();
             const startTime = meetingStartTime || new Date();
-
             const durationMinutes = Math.round((endTime - startTime) / (1000 * 60));
             const formattedDuration = durationMinutes < 1 ? "1 min" : `${durationMinutes} mins`;
 
@@ -387,17 +418,12 @@ export default function VideoMeetComponent() {
         window.location.href = "/history";
     };
 
-    let handleMessage = (e) => {
-        setMessage(e.target.value);
-    };
+    let handleMessage = (e) => setMessage(e.target.value);
 
     const addMessage = (data, sender, socketIdSender) => {
-        setMessages((prevMessages) => [
-            ...prevMessages,
-            { sender: sender, data: data }
-        ]);
+        setMessages((prevMessages) => [...prevMessages, { sender, data }]);
         if (socketIdSender !== socketIdRef.current) {
-            setNewMessages((prevNewMessages) => prevNewMessages + 1);
+            setNewMessages((prev) => prev + 1);
         }
     };
 
@@ -426,6 +452,8 @@ export default function VideoMeetComponent() {
 
         getMedia();
     };
+
+    const isCallerMainStage = videos.length === 0 || xrayActive;
 
     return (
         <div>
@@ -496,38 +524,115 @@ export default function VideoMeetComponent() {
                 </div>
             ) : (
                 <div className={styles.meetVideoContainer}>
-                    {/* অপোনেন্টের ভিডিও (স্ক্রিন জুড়ে বড় হবে) */}
-                    <div className={styles.conferenceView}>
-                        {videos.length === 0 ? (
-                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "#9ca3af" }}>
-                                <p style={{ fontSize: "1.2rem", fontWeight: "600" }}>Waiting for others to join...</p>
-                            </div>
-                        ) : (
-                            videos.map((v) => (
-                                <div key={v.socketId}>
+                    {/* অপোনেন্টের ভিডিও */}
+                    {videos.length > 0 && (
+                        <div
+                            className={isCallerMainStage ? undefined : styles.conferenceView}
+                            style={isCallerMainStage ? {
+                                position: 'absolute',
+                                bottom: '95px',
+                                right: '25px',
+                                width: '260px',
+                                height: '165px',
+                                borderRadius: '16px',
+                                overflow: 'hidden',
+                                zIndex: 25,
+                                border: '2px solid #38bdf8',
+                                boxShadow: '0 10px 30px rgba(0,0,0,0.7)',
+                                background: '#0f172a'
+                            } : undefined}
+                        >
+                            {videos.map((v) => (
+                                <div key={v.socketId} style={{ width: '100%', height: '100%' }}>
                                     <video
                                         data-socket={v.socketId}
                                         ref={ref => {
-                                            if (ref && v.stream) {
-                                                ref.srcObject = v.stream;
-                                            }
+                                            if (ref && v.stream) ref.srcObject = v.stream;
                                         }}
                                         autoPlay
                                         playsInline
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                     />
                                 </div>
-                            ))
-                        )}
+                            ))}
+                        </div>
+                    )}
+
+                    {/* নিজের (কলারের) ভিডিও + AI X-Ray কন্টেইনার */}
+                    <div
+                        style={isCallerMainStage ? {
+                            position: 'relative',
+                            width: '100%',
+                            height: '100%',
+                            overflow: 'hidden'
+                        } : {
+                            position: 'absolute',
+                            bottom: '95px',
+                            right: '25px',
+                            width: '280px',
+                            height: '175px',
+                            borderRadius: '16px',
+                            overflow: 'hidden',
+                            zIndex: 20,
+                            border: '2px solid #FF9839'
+                        }}
+                    >
+                        <video
+                            ref={localVideoref}
+                            autoPlay
+                            muted
+                            playsInline
+                            style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                                transform: 'scaleX(-1)'
+                            }}
+                        />
+
+                        {/* AI X-Ray Mirror 3D Overlay */}
+                        <XRayOverlay
+                            isActive={xrayActive}
+                            mode={xrayMode}
+                            sourceVideoRef={localVideoref}
+                            onCombinedStream={handleXRayStreamReady}
+                        />
                     </div>
 
-                    {/* নিজের ভিডিও (বড় প্রিমিয়াম ফ্রেম) */}
-                    <video 
-                        className={styles.meetUserVideo} 
-                        ref={localVideoref} 
-                        autoPlay 
-                        muted 
-                        playsInline 
-                    />
+                    {/* X-Ray চালু থাকলে Skull / Hand / Full Body মোড সুইচ বাটন */}
+                    {xrayActive && (
+                        <div style={{
+                            position: 'absolute', top: '24px', right: showModal ? '400px' : '25px', zIndex: 35,
+                            display: 'flex', gap: '8px', background: 'rgba(9, 13, 26, 0.88)',
+                            backdropFilter: 'blur(12px)', padding: '8px 12px', borderRadius: '12px',
+                            border: '1px solid rgba(56, 189, 248, 0.45)', transition: 'right 0.3s ease'
+                        }}>
+                            <Button
+                                size="small"
+                                variant={xrayMode === 'skull' ? 'contained' : 'outlined'}
+                                onClick={() => setXrayMode('skull')}
+                                sx={{ fontSize: '12px', textTransform: 'none', fontWeight: 600 }}
+                            >
+                                Skull X-Ray
+                            </Button>
+                            <Button
+                                size="small"
+                                variant={xrayMode === 'hand' ? 'contained' : 'outlined'}
+                                onClick={() => setXrayMode('hand')}
+                                sx={{ fontSize: '12px', textTransform: 'none', fontWeight: 600 }}
+                            >
+                                Hand X-Ray
+                            </Button>
+                            <Button
+                                size="small"
+                                variant={xrayMode === 'body' ? 'contained' : 'outlined'}
+                                onClick={() => setXrayMode('body')}
+                                sx={{ fontSize: '12px', textTransform: 'none', fontWeight: 600 }}
+                            >
+                                Full Body Skeleton
+                            </Button>
+                        </div>
+                    )}
 
                     {/* চ্যাট উইন্ডো */}
                     {showModal && (
@@ -589,6 +694,10 @@ export default function VideoMeetComponent() {
                                 {screen ? <StopScreenShareIcon sx={{ color: "#FF9839" }} /> : <ScreenShareIcon />}
                             </IconButton>
                         )}
+
+                        <IconButton className={styles.controlBtn} onClick={toggleXRay} title="AI X-Ray Mirror">
+                            <AccessibilityNewIcon sx={{ color: xrayActive ? "#38bdf8" : "inherit" }} />
+                        </IconButton>
 
                         <Badge badgeContent={newMessages} color="primary">
                             <IconButton className={styles.controlBtn} onClick={() => { setModal(!showModal); setNewMessages(0); }}>
